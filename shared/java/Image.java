@@ -1,6 +1,11 @@
 package io.github.humbleui.skija;
 
+import java.lang.annotation.Native;
 import java.nio.*;
+
+import javax.swing.plaf.synth.ColorType;
+import javax.xml.crypto.Data;
+
 import org.jetbrains.annotations.*;
 import io.github.humbleui.skija.impl.*;
 
@@ -42,13 +47,16 @@ public class Image extends RefCnt implements IHasImageInfo {
      * @param colorType   color type of the texture
      * @return            Image
      */
-    public static Image adoptTextureFrom(DirectContext context, int textureId, int width, int height, ColorType colorType) {
+    public static Image adoptTextureFrom(DirectContext context, int textureId, int target, int width, int height, int format, SurfaceOrigin surfaceOrigin, ColorType colorType) {
         try {
             Stats.onNativeCall();
             long ptr = _nAdoptTextureFrom(Native.getPtr(context),
                                           textureId,
+                                          target,
                                           width,
                                           height,
+                                          format,
+                                          surfaceOrigin.ordinal(),
                                           colorType.ordinal());
             if (ptr == 0)
                 throw new RuntimeException("Failed to adoptTextureFrom " + textureId + " " + width + "x" + height);
@@ -417,7 +425,7 @@ public class Image extends RefCnt implements IHasImageInfo {
         }
     }
 
-    @ApiStatus.Internal  public static native long _nAdoptTextureFrom(long contextPtr, int textureId, int width, int height, int colorType);
+    @ApiStatus.Internal public static native long _nAdoptTextureFrom(long contextPtr, int textureId, int target, int width, int height, int format, int surfaceOrigin, int colorType);
     @ApiStatus.Internal public static native long _nMakeRasterFromBytes(int width, int height, int colorType, int alphaType, long colorSpacePtr, byte[] pixels, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromData(int width, int height, int colorType, int alphaType, long colorSpacePtr, long dataPtr, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromBitmap(long bitmapPtr);
