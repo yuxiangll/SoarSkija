@@ -7,7 +7,7 @@
 #include "interop.hh"
 #include "GrBackendSurface.h"
 #include "GrDirectContext.h"
-#include "ganesh/gl/GrGLBackendSurface.h"
+#include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/ganesh/SkImageGanesh.h"
 #include "include/gpu/gl/GrGLTypes.h"
 
