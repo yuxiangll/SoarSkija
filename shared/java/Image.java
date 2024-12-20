@@ -44,16 +44,14 @@ public class Image extends RefCnt implements IHasImageInfo {
      * @param colorSpace  color space of the texture
      * @return            Image
      */
-    public static Image adoptTextureFrom(DirectContext context, int textureId, int width, int height, ColorType colorType, AlphaType alphaType, @Nullable ColorSpace colorSpace) {
+    public static Image adoptTextureFrom(DirectContext context, int textureId, int width, int height, ColorType colorType) {
         try {
             Stats.onNativeCall();
             long ptr = _nAdoptTextureFrom(Native.getPtr(context),
                                           textureId,
                                           width,
                                           height,
-                                          colorType.ordinal(),
-                                          alphaType.ordinal(),
-                                          Native.getPtr(colorSpace));
+                                          colorType.ordinal());
             if (ptr == 0)
                 throw new RuntimeException("Failed to adoptTextureFrom " + textureId + " " + width + "x" + height);
             return new Image(ptr);
@@ -422,7 +420,7 @@ public class Image extends RefCnt implements IHasImageInfo {
         }
     }
 
-    @ApiStatus.Internal  public static native long _nAdoptTextureFrom(long contextPtr, int textureId, int width, int height, int colorType, int alphaType, long colorSpacePtr);
+    @ApiStatus.Internal  public static native long _nAdoptTextureFrom(long contextPtr, int textureId, int width, int height, int colorType);
     @ApiStatus.Internal public static native long _nMakeRasterFromBytes(int width, int height, int colorType, int alphaType, long colorSpacePtr, byte[] pixels, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromData(int width, int height, int colorType, int alphaType, long colorSpacePtr, long dataPtr, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromBitmap(long bitmapPtr);
