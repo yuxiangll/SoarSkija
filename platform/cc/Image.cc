@@ -7,7 +7,6 @@
 #include "interop.hh"
 #include "GrBackendSurface.h"
 #include "GrDirectContext.h"
-#include "GrGLTypes.h"
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptTextureFrom
   (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint width, jint height, jint colorType, jint alphaType, jlong colorSpacePtr) {
