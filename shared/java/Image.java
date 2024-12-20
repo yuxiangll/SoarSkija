@@ -40,8 +40,6 @@ public class Image extends RefCnt implements IHasImageInfo {
      * @param width       width of the texture
      * @param height      height of the texture
      * @param colorType   color type of the texture
-     * @param alphaType   alpha type of the texture
-     * @param colorSpace  color space of the texture
      * @return            Image
      */
     public static Image adoptTextureFrom(DirectContext context, int textureId, int width, int height, ColorType colorType) {
