@@ -7,6 +7,7 @@
 #include "interop.hh"
 #include "GrBackendSurface.h"
 #include "GrDirectContext.h"
+#include "GrGLTypes.h"
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptTextureFrom
   (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint width, jint height, jint colorType, jint alphaType, jlong colorSpacePtr) {
@@ -20,13 +21,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptT
 
     GrBackendTexture backendTexture(width, height, GrMipMapped::kNo, textureInfo);
     
-    SkImageInfo imageInfo = SkImageInfo::Make(width,
-                                              height,
-                                              static_cast<SkColorType>(colorType),
-                                              static_cast<SkAlphaType>(alphaType),
-                                              sk_ref_sp<SkColorSpace>(colorSpace));
-    
-    sk_sp<SkImage> image = SkImages::AdoptTextureFrom(context, backendTexture, imageInfo.alphaType(), sk_ref_sp<SkColorSpace>(colorSpace));
+    sk_sp<SkImage> image = SkImage::MakeFromTexture(context, backendTexture, kTopLeft_GrSurfaceOrigin, static_cast<SkColorType>(colorType), static_cast<SkAlphaType>(alphaType), sk_ref_sp<SkColorSpace>(colorSpace));
     return reinterpret_cast<jlong>(image.release());
 }
 

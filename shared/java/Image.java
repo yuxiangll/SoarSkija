@@ -24,7 +24,7 @@ public class Image extends RefCnt implements IHasImageInfo {
     }
 
 
-        /**
+    /**
      * <p>Creates Image from an OpenGL texture.</p>
      *
      * <p>Image is returned if the texture is valid. Valid texture parameters include:</p>
@@ -422,7 +422,7 @@ public class Image extends RefCnt implements IHasImageInfo {
         }
     }
 
-    @ApiStatus.Internal public static native long _nAdoptTextureFrom(long contextPtr, int textureId, int width, int height, int colorType, int alphaType, long colorSpacePtr);
+    @ApiStatus.Internal  public static native long _nAdoptTextureFrom(long contextPtr, int textureId, int width, int height, int colorType, int alphaType, long colorSpacePtr);
     @ApiStatus.Internal public static native long _nMakeRasterFromBytes(int width, int height, int colorType, int alphaType, long colorSpacePtr, byte[] pixels, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromData(int width, int height, int colorType, int alphaType, long colorSpacePtr, long dataPtr, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromBitmap(long bitmapPtr);
