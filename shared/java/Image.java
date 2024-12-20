@@ -57,7 +57,6 @@ public class Image extends RefCnt implements IHasImageInfo {
             return new Image(ptr);
         } finally {
             ReferenceUtil.reachabilityFence(context);
-            ReferenceUtil.reachabilityFence(colorSpace);
         }
     }
     
