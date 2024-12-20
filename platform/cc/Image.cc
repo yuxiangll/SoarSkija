@@ -7,7 +7,7 @@
 #include "interop.hh"
 #include "GrBackendSurface.h"
 #include "GrDirectContext.h"
-#include "ganesh/gl/GrGLDefines.h"
+#include "gl/GrGLTypes.h"
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptTextureFrom
   (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint width, jint height, jint colorType, jint alphaType, jlong colorSpacePtr) {
@@ -16,8 +16,8 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptT
     
     GrGLTextureInfo textureInfo;
     textureInfo.fID = textureId;
-    textureInfo.fTarget = GR_GL_TEXTURE_2D;
-    textureInfo.fFormat = GR_GL_RGBA8;
+    textureInfo.fTarget = 0x0DE1;
+    textureInfo.fFormat = 0x8058;
 
     GrBackendTexture backendTexture(width, height, GrMipMapped::kNo, textureInfo);
     
