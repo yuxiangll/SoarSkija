@@ -14,14 +14,18 @@
 extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_skia_ImageKt__1nAdoptFromTexture
   (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint target, jint width, jint height, jint format, jint surfaceOrigin, jint colorType) {
     GrDirectContext* context = reinterpret_cast<GrDirectContext*>(static_cast<uintptr_t>(contextPtr));
-    SkColorSpace* colorSpace = reinterpret_cast<SkColorSpace*>(static_cast<uintptr_t>(colorSpacePtr));
+    
     GrGLTextureInfo textureInfo;
     textureInfo.fID = static_cast<GrGLuint>(textureId);
     textureInfo.fTarget = static_cast<GrGLenum>(target);
     textureInfo.fFormat = static_cast<GrGLenum>(format);
-    GrBackendTexture backendTexture = GrBackendTextures::MakeGL(
-         width, height, skgpu::Mipmapped::kYes, textureInfo
+    
+    GrBackendTexture backendTexture = GrBackendTexture(
+        width, height,
+        skgpu::Mipmapped::kYes,
+        textureInfo
     );
+
     sk_sp<SkImage> image = SkImages::AdoptTextureFrom(
         context,
         backendTexture,
