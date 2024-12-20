@@ -1,10 +1,6 @@
 package io.github.humbleui.skija;
 
-import java.lang.annotation.Native;
 import java.nio.*;
-
-import javax.swing.plaf.synth.ColorType;
-import javax.xml.crypto.Data;
 
 import org.jetbrains.annotations.*;
 import io.github.humbleui.skija.impl.*;
