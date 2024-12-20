@@ -7,32 +7,26 @@
 #include "interop.hh"
 #include "GrBackendSurface.h"
 #include "GrDirectContext.h"
-#include "gl/GrGLTypes.h"
+#include "ganesh/gl/GrGLBackendSurface.h"
+#include "include/gpu/ganesh/SkImageGanesh.h"
+#include "include/gpu/gl/GrGLTypes.h"
 
-extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptTextureFrom
-  (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint width, jint height, jint colorType, jint alphaType, jlong colorSpacePtr) {
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_skia_ImageKt__1nAdoptFromTexture
+  (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint target, jint width, jint height, jint format, jint surfaceOrigin, jint colorType) {
     GrDirectContext* context = reinterpret_cast<GrDirectContext*>(static_cast<uintptr_t>(contextPtr));
     SkColorSpace* colorSpace = reinterpret_cast<SkColorSpace*>(static_cast<uintptr_t>(colorSpacePtr));
-    
     GrGLTextureInfo textureInfo;
-    textureInfo.fID = textureId;
-    textureInfo.fTarget = 0x0DE1;
-    textureInfo.fFormat = 0x8058;
-
-    GrBackendTexture backendTexture(width, height, GrMipMapped::kNo, textureInfo);
-    
-    SkImageInfo imageInfo = SkImageInfo::Make(width,
-                                              height,
-                                              static_cast<SkColorType>(colorType),
-                                              static_cast<SkAlphaType>(alphaType),
-                                              sk_ref_sp<SkColorSpace>(colorSpace));
-    
+    textureInfo.fID = static_cast<GrGLuint>(textureId);
+    textureInfo.fTarget = static_cast<GrGLenum>(target);
+    textureInfo.fFormat = static_cast<GrGLenum>(format);
+    GrBackendTexture backendTexture = GrBackendTextures::MakeGL(
+         width, height, skgpu::Mipmapped::kYes, textureInfo
+    );
     sk_sp<SkImage> image = SkImages::AdoptTextureFrom(
-        context, 
-        backendTexture, 
-        static_cast<SkColorType>(colorType), 
-        static_cast<SkAlphaType>(alphaType), 
-        sk_ref_sp<SkColorSpace>(colorSpace)
+        context,
+        backendTexture,
+        static_cast<GrSurfaceOrigin>(surfaceOrigin),
+        static_cast<SkColorType>(colorType)
     );
     return reinterpret_cast<jlong>(image.release());
 }
