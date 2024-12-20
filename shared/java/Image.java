@@ -23,6 +23,46 @@ public class Image extends RefCnt implements IHasImageInfo {
         return makeRasterFromBytes(imageInfo, bytes, rowBytes);
     }
 
+
+        /**
+     * <p>Creates Image from an OpenGL texture.</p>
+     *
+     * <p>Image is returned if the texture is valid. Valid texture parameters include:</p>
+     * <ul>
+     * <li>textureId is a valid OpenGL texture ID;</li>
+     * <li>width and height are greater than zero;</li>
+     * <li>ColorType and AlphaType are valid, and ColorType is not ColorType.UNKNOWN;</li>
+     * <li>colorSpace is a valid SkColorSpace;</li>
+     * </ul>
+     *
+     * @param context     GrDirectContext
+     * @param textureId   OpenGL texture ID
+     * @param width       width of the texture
+     * @param height      height of the texture
+     * @param colorType   color type of the texture
+     * @param alphaType   alpha type of the texture
+     * @param colorSpace  color space of the texture
+     * @return            Image
+     */
+    public static Image adoptTextureFrom(DirectContext context, int textureId, int width, int height, ColorType colorType, AlphaType alphaType, @Nullable ColorSpace colorSpace) {
+        try {
+            Stats.onNativeCall();
+            long ptr = _nAdoptTextureFrom(Native.getPtr(context),
+                                          textureId,
+                                          width,
+                                          height,
+                                          colorType.ordinal(),
+                                          alphaType.ordinal(),
+                                          Native.getPtr(colorSpace));
+            if (ptr == 0)
+                throw new RuntimeException("Failed to adoptTextureFrom " + textureId + " " + width + "x" + height);
+            return new Image(ptr);
+        } finally {
+            ReferenceUtil.reachabilityFence(context);
+            ReferenceUtil.reachabilityFence(colorSpace);
+        }
+    }
+    
     /**
      * <p>Creates Image from pixels.</p>
      *
@@ -382,6 +422,7 @@ public class Image extends RefCnt implements IHasImageInfo {
         }
     }
 
+    @ApiStatus.Internal public static native long _nAdoptTextureFrom(long contextPtr, int textureId, int width, int height, int colorType, int alphaType, long colorSpacePtr);
     @ApiStatus.Internal public static native long _nMakeRasterFromBytes(int width, int height, int colorType, int alphaType, long colorSpacePtr, byte[] pixels, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromData(int width, int height, int colorType, int alphaType, long colorSpacePtr, long dataPtr, long rowBytes);
     @ApiStatus.Internal public static native long _nMakeRasterFromBitmap(long bitmapPtr);

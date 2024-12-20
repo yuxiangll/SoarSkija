@@ -5,6 +5,30 @@
 #include "SkImage.h"
 #include "SkShader.h"
 #include "interop.hh"
+#include "GrBackendSurface.h"
+#include "GrDirectContext.h"
+
+extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptTextureFrom
+  (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint width, jint height, jint colorType, jint alphaType, jlong colorSpacePtr) {
+    GrDirectContext* context = reinterpret_cast<GrDirectContext*>(static_cast<uintptr_t>(contextPtr));
+    SkColorSpace* colorSpace = reinterpret_cast<SkColorSpace*>(static_cast<uintptr_t>(colorSpacePtr));
+    
+    GrGLTextureInfo textureInfo;
+    textureInfo.fID = textureId;
+    textureInfo.fTarget = GR_GL_TEXTURE_2D;
+    textureInfo.fFormat = GR_GL_RGBA8;
+
+    GrBackendTexture backendTexture(width, height, GrMipMapped::kNo, textureInfo);
+    
+    SkImageInfo imageInfo = SkImageInfo::Make(width,
+                                              height,
+                                              static_cast<SkColorType>(colorType),
+                                              static_cast<SkAlphaType>(alphaType),
+                                              sk_ref_sp<SkColorSpace>(colorSpace));
+    
+    sk_sp<SkImage> image = SkImages::AdoptTextureFrom(context, backendTexture, imageInfo.alphaType(), sk_ref_sp<SkColorSpace>(colorSpace));
+    return reinterpret_cast<jlong>(image.release());
+}
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nMakeRasterFromBytes
   (JNIEnv* env, jclass jclass, jint width, jint height, jint colorType, jint alphaType, jlong colorSpacePtr, jbyteArray bytesArr, jlong rowBytes) {
