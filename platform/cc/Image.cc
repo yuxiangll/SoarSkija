@@ -14,7 +14,16 @@
 extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptTextureFrom
   (JNIEnv* env, jclass jclass, jlong contextPtr, jint textureId, jint target, jint width, jint height, jint format, jint surfaceOrigin, jint colorType) {
 
+    if (contextPtr == 0) {
+        std::cerr << "Invalid context pointer" << std::endl;
+        return 0;
+    }
+
     GrDirectContext* context = reinterpret_cast<GrDirectContext*>(static_cast<uintptr_t>(contextPtr));
+    if (context == nullptr) {
+        std::cerr << "Failed to cast context pointer" << std::endl;
+        return 0;
+    }
 
     GrGLTextureInfo textureInfo;
     textureInfo.fID = static_cast<GrGLuint>(textureId);
@@ -23,9 +32,14 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptT
     
     GrBackendTexture backendTexture = GrBackendTexture(
         width, height,
-        skgpu::Mipmapped::kNo,
+        skgpu::Mipmapped::kYes,
         textureInfo
     );
+
+    if (!backendTexture.isValid()) {
+        std::cerr << "Invalid backend texture" << std::endl;
+        return 0;
+    }
 
     sk_sp<SkImage> image = SkImages::AdoptTextureFrom(
         context,
@@ -33,6 +47,11 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_github_humbleui_skija_Image__1nAdoptT
         static_cast<GrSurfaceOrigin>(surfaceOrigin),
         static_cast<SkColorType>(colorType)
     );
+
+    if (!image) {
+        std::cerr << "Failed to adopt texture from" << std::endl;
+        return 0;
+    }
     
     return reinterpret_cast<jlong>(image.release());
 }
