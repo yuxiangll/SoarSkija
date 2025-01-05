@@ -1,46 +1,53 @@
 package io.github.humbleui.skija.impl;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class Cleanable {
 
-    private static final MethodHandle createCleanerHandle;
-    private static final MethodHandle cleanHandle;
+    private static final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
+    private static final ConcurrentHashMap<PhantomReference<?>, Runnable> cleanupActions = new ConcurrentHashMap<>();
+    private static final ExecutorService cleanerExecutor = Executors.newSingleThreadExecutor();
 
     static {
-        try {
-            Class<?> cleanerClass = Class.forName("sun.misc.Cleaner");
-            createCleanerHandle = MethodHandles.publicLookup().findStatic(cleanerClass, "create", MethodType.methodType(cleanerClass, Object.class, Runnable.class));
-            cleanHandle = MethodHandles.publicLookup().findVirtual(cleanerClass, "clean", MethodType.methodType(void.class));
-        } catch (Throwable e) {
-            throw new NoClassDefFoundError("sun.misc.Cleaner");
-        }
+        cleanerExecutor.execute(() -> {
+            try {
+                while (true) {
+                    PhantomReference<?> ref = (PhantomReference<?>) referenceQueue.remove();
+                    Runnable action = cleanupActions.remove(ref);
+                    if (action != null) {
+                        action.run();
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
     }
 
     public static Cleanable register(Object obj, Runnable action) {
         Objects.requireNonNull(obj);
         Objects.requireNonNull(action);
-        try {
-            return new Cleanable(createCleanerHandle.invokeWithArguments(obj, action));
-        } catch (Throwable e) {
-            throw new RuntimeException("Unreachable", e);
-        }
+        PhantomReference<Object> ref = new PhantomReference<>(obj, referenceQueue);
+        cleanupActions.put(ref, action);
+        return new Cleanable(ref);
     }
 
-    private final Object cleaner;
+    private final PhantomReference<?> reference;
 
-    private Cleanable(Object cleaner) {
-        this.cleaner = cleaner;
+    private Cleanable(PhantomReference<?> reference) {
+        this.reference = reference;
     }
 
     public void clean() {
-        try {
-            cleanHandle.invokeWithArguments(cleaner);
-        } catch (Throwable e) {
-            throw new RuntimeException("Unreachable", e);
+        Runnable action = cleanupActions.remove(reference);
+        if (action != null) {
+            action.run();
         }
+        reference.clear();
     }
 }
